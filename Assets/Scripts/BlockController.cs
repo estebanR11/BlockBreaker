@@ -23,6 +23,11 @@ public class BlockController : MonoBehaviour
     [Tooltip("Optional prefab to spawn when this special block is destroyed.")]
     [SerializeField] private GameObject powerUpPrefab;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip breakSfx;
+    [Range(0f, 1f)]
+    [SerializeField] private float breakSfxVolume = 1f;
+
     public static event System.Action<PowerUpType, Vector3> OnSpecialBlockDestroyed;
     private bool _hasBeenHit;
     private bool _isRegistered;
@@ -72,6 +77,7 @@ public class BlockController : MonoBehaviour
         if (isSpecialBlock)
             TriggerSpecialPowerUp();
 
+        PlayBreakSfx();
         Destroy(gameObject);
     }
 
@@ -92,6 +98,14 @@ public class BlockController : MonoBehaviour
         }
 
         OnSpecialBlockDestroyed?.Invoke(selectedPowerUp, transform.position);
+    }
+
+    private void PlayBreakSfx()
+    {
+        if (breakSfx == null)
+            return;
+
+        AudioSource.PlayClipAtPoint(breakSfx, transform.position, breakSfxVolume);
     }
 
     private void TryRegisterBlock()

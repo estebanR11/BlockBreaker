@@ -15,7 +15,13 @@ public class BallController : MonoBehaviour
     [Tooltip("Initial launch direction. Use Y negative to go down.")]
     [SerializeField] private Vector2 initialDirection = Vector2.down;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip paddleBounceSfx;
+    [Range(0f, 1f)]
+    [SerializeField] private float paddleBounceVolume = 1f;
+
     private Rigidbody2D _rb;
+    private AudioSource _audioSource;
     private bool _isLaunched;
     private GameManager _subscribedManager;
     private float _currentSpeed;
@@ -26,6 +32,7 @@ public class BallController : MonoBehaviour
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _audioSource = GetComponent<AudioSource>();
 
         if (_rb == null)
         {
@@ -109,6 +116,7 @@ public class BallController : MonoBehaviour
             return;
 
         ApplyPaddleBounce(collision.collider);
+        PlayPaddleBounceSfx();
     }
 
     private Vector2 GetSafeDirection()
@@ -157,6 +165,20 @@ public class BallController : MonoBehaviour
         Vector2 bounceDirection = new Vector2(horizontal, Mathf.Max(0.2f, vertical)).normalized;
 
         _rb.linearVelocity = bounceDirection * _currentSpeed;
+    }
+
+    private void PlayPaddleBounceSfx()
+    {
+        if (paddleBounceSfx == null)
+            return;
+
+        if (_audioSource != null)
+        {
+            _audioSource.PlayOneShot(paddleBounceSfx, paddleBounceVolume);
+            return;
+        }
+
+        AudioSource.PlayClipAtPoint(paddleBounceSfx, transform.position, paddleBounceVolume);
     }
 
     public void SetCurrentSpeed(float newSpeed)

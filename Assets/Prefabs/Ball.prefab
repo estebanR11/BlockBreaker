@@ -174,3 +174,5 @@ MonoBehaviour:
   maxSpeed: 14
   bounceInfluence: 0.2
   initialDirection: {x: 0, y: -1}
+  paddleBounceSfx: {fileID: 8300000, guid: 647196b8a23e9f642a65d02f198aad46, type: 3}
+  paddleBounceVolume: 0.1

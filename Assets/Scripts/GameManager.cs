@@ -10,6 +10,10 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     public event Action OnStartGame;
+    public event Action<int> OnLivesChanged;
+    public event Action<bool> OnWaitingForStartChanged;
+    public event Action OnGameOver;
+    public event Action OnLevelCompleted;
 
     [Header("References")]
     [SerializeField] private PaddleMovement paddle;
@@ -48,6 +52,9 @@ public class GameManager : MonoBehaviour
     public int Lives => _lives;
     public int ActiveBallCount => _activeBalls.Count;
     public int RemainingBlockCount => _activeBlocks.Count;
+    public bool HasGameStarted => _gameStarted;
+    public bool IsGameOver => _isGameOver;
+    public bool IsLevelCompleted => _isLevelCompleted;
 
     private void Awake()
     {
@@ -125,6 +132,7 @@ public class GameManager : MonoBehaviour
 
         _gameStarted = true;
         OnStartGame?.Invoke();
+        OnWaitingForStartChanged?.Invoke(false);
     }
 
     public void RegisterBall(BallController ballController)
@@ -187,6 +195,7 @@ public class GameManager : MonoBehaviour
                 break;
             case BlockController.PowerUpType.ExtraLife:
                 _lives++;
+                OnLivesChanged?.Invoke(_lives);
                 break;
             case BlockController.PowerUpType.ExtraBall:
                 SpawnExtraBall();
@@ -310,16 +319,20 @@ public class GameManager : MonoBehaviour
             return;
 
         _lives = Mathf.Max(0, _lives - 1);
+        OnLivesChanged?.Invoke(_lives);
 
         if (_lives <= 0)
         {
             _isGameOver = true;
+            OnGameOver?.Invoke();
+            OnWaitingForStartChanged?.Invoke(false);
             Debug.Log("Game Over: no lives left.");
             return;
         }
 
         SpawnReplacementBall();
         _gameStarted = false;
+        OnWaitingForStartChanged?.Invoke(true);
     }
 
     private void HandleLevelCompleted()
@@ -330,6 +343,8 @@ public class GameManager : MonoBehaviour
         _isLevelCompleted = true;
         _gameStarted = false;
         PauseAllBalls();
+        OnLevelCompleted?.Invoke();
+        OnWaitingForStartChanged?.Invoke(false);
         Debug.Log("Level Complete: all blocks destroyed. Press R to restart.");
     }
 
